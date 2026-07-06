@@ -1,0 +1,791 @@
+<!DOCTYPE html>
+<html lang="bn" data-lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Finlyzr — Money & Everyday Calculators</title>
+<meta name="description" content="Instant, free calculators for loans, interest, tax, budget, age and BMI — no sign-up needed.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Noto+Serif+Bengali:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600;700&family=Hind+Siliguri:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#FBF7EC;
+    --bg-soft:#F1E8D3;
+    --ink:#181A16;
+    --ink-soft:#6E6A57;
+    --border:#DED0AC;
+    --blue:#3548C4;    --blue-tint:#E3E5F9;
+    --amber:#B8860B;   --amber-tint:#F3E7C4;
+    --green:#0E6B4F;   --green-tint:#D8EEE3;
+    --pink:#AE3B2E;    --pink-tint:#F3DED7;
+    --purple:#0E6B4F;
+    --cyan:#C9982C;
+    --shadow:0 2px 4px rgba(24,26,22,.05), 0 10px 26px rgba(24,26,22,.09);
+    --radius:14px;
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0; background:var(--bg); color:var(--ink);
+    font-family:'Inter','Hind Siliguri',sans-serif; line-height:1.55;
+  }
+  h1,h2,h3{ font-family:'Fraunces','Noto Serif Bengali',serif; font-weight:600; color:var(--ink); margin:0; letter-spacing:-.01em; }
+  .mono{ font-family:'JetBrains Mono',monospace; }
+  a{color:inherit;}
+  button{font-family:inherit;}
+  :focus-visible{ outline:3px solid var(--blue); outline-offset:2px; }
+
+  /* ---------------- Shared animations ---------------- */
+  @keyframes fadeInUp{ from{opacity:0; transform:translateY(16px);} to{opacity:1; transform:translateY(0);} }
+  @keyframes markFloat{ 0%,100%{ transform:translateY(0) rotate(0deg); } 50%{ transform:translateY(-2px) rotate(-5deg); } }
+  @keyframes searchGlow{ 0%,100%{ box-shadow:0 0 0 0 rgba(255,255,255,.5), var(--shadow); } 50%{ box-shadow:0 0 0 9px rgba(255,255,255,0), var(--shadow); } }
+  @keyframes overlayFade{ from{opacity:0;} to{opacity:1;} }
+  @keyframes modalPop{ from{ transform:scale(.93) translateY(8px); opacity:0; } to{ transform:scale(1) translateY(0); opacity:1; } }
+  @keyframes popIn{ from{ opacity:0; transform:scale(.85); } to{ opacity:1; transform:scale(1); } }
+  @media (prefers-reduced-motion: reduce){
+    *,*::before,*::after{ animation-duration:.001ms !important; animation-iteration-count:1 !important; transition-duration:.001ms !important; }
+  }
+
+  /* language toggle visibility */
+  [data-lang="en"] .i18n-bn{ display:none !important; }
+  [data-lang="bn"] .i18n-en{ display:none !important; }
+
+  /* ---------------- Header ---------------- */
+  .site-header{
+    position:sticky; top:0; z-index:50; background:rgba(251,247,236,.88);
+    backdrop-filter:blur(10px); border-bottom:1px solid var(--border);
+  }
+  .header-inner{ max-width:1200px; margin:0 auto; padding:13px 24px; display:flex; align-items:center; gap:20px; }
+  .logo{ font-family:'Fraunces','Noto Serif Bengali',serif; font-weight:600; font-size:1.3rem; text-decoration:none; color:var(--ink); display:flex; align-items:center; gap:9px; letter-spacing:-.01em; }
+  .logo .mark{
+    width:30px; height:30px; border-radius:7px; display:inline-flex; align-items:center; justify-content:center; color:var(--bg); font-weight:700;
+    background:var(--ink); font-family:'JetBrains Mono',monospace; font-size:.95rem; border-bottom:3px solid var(--green);
+    animation:markFloat 3.4s ease-in-out infinite; transition:transform .2s ease;
+  }
+  .logo:hover .mark{ transform:scale(1.12) rotate(0deg); animation-play-state:paused; }
+  .main-nav{ display:flex; gap:20px; flex:1; }
+  .main-nav a{ font-size:.88rem; font-weight:700; color:var(--ink-soft); text-decoration:none; }
+  .main-nav a:hover{ color:var(--blue); }
+  .lang-toggle{ display:flex; border:1px solid var(--border); border-radius:999px; overflow:hidden; }
+  .lang-toggle button{
+    border:none; background:var(--bg); padding:7px 13px; font-size:.8rem; font-weight:700; color:var(--ink-soft); cursor:pointer;
+    transition:background .2s ease, color .2s ease;
+  }
+  .lang-toggle button.active{ background:var(--ink); color:#fff; }
+
+
+  /* ---------------- Hero ---------------- */
+  .hero{
+    position:relative; overflow:hidden; color:var(--bg);
+    background:
+      radial-gradient(ellipse 640px 320px at 18% 0%, rgba(14,107,79,.35), transparent 65%),
+      repeating-linear-gradient(0deg, rgba(251,247,236,.055) 0 1px, transparent 1px 30px),
+      repeating-linear-gradient(90deg, rgba(251,247,236,.055) 0 1px, transparent 1px 30px),
+      var(--ink);
+    padding:52px 24px 40px;
+  }
+  .hero-inner{ position:relative; max-width:1200px; margin:0 auto; display:grid; grid-template-columns:1.15fr .85fr; gap:40px; align-items:center; }
+  .hero-eyebrow{
+    display:inline-flex; align-items:center; gap:9px; font-size:.72rem; font-weight:700; color:var(--bg);
+    border:1px dashed rgba(251,247,236,.4); padding:6px 13px; border-radius:4px; margin-bottom:18px;
+    font-family:'JetBrains Mono',monospace; text-transform:uppercase; letter-spacing:.06em;
+  }
+  .hero h1{ color:var(--bg); font-size:clamp(1.95rem,3.6vw,2.9rem); line-height:1.16; margin-bottom:14px; }
+  .hero h1 .hl{ color:var(--cyan); font-style:italic; }
+  .hero p{ color:#D8D2BE; font-size:1.02rem; max-width:54ch; margin-bottom:26px; }
+  .hero-search{
+    display:flex; align-items:center; gap:10px; background:var(--bg); border-radius:10px; padding:6px 6px 6px 16px;
+    box-shadow:var(--shadow); max-width:480px; transition:transform .2s ease;
+  }
+  .hero-search:hover{ transform:translateY(-2px); }
+  .hero-search:focus-within{ animation:searchGlow 1.7s ease-out infinite; }
+  .hero-search svg{ color:var(--ink-soft); flex:none; transition:color .2s ease; }
+  .hero-search:focus-within svg{ color:var(--green); }
+  .hero-search input{ border:none; outline:none; flex:1; font-size:.98rem; padding:11px 4px; color:var(--ink); font-family:inherit; }
+  .hero-search button{
+    background:var(--ink); color:var(--bg); border:none; border-radius:6px; padding:11px 18px; font-weight:700; font-size:.88rem; cursor:pointer;
+  }
+  .hero-stats{ display:flex; gap:26px; margin-top:20px; flex-wrap:wrap; padding-top:16px; border-top:1px dashed rgba(251,247,236,.25); }
+  .hero-stats div{ font-size:.76rem; color:#C7C1AC; font-weight:600; text-transform:uppercase; letter-spacing:.03em; }
+  .hero-stats b{ display:block; color:var(--bg); font-family:'JetBrains Mono',monospace; font-size:1.3rem; font-weight:700; }
+
+  /* Signature element: a receipt-style quick-access ticket */
+  .hero-card{
+    position:relative; background:var(--bg); color:var(--ink); padding:22px 22px 30px; border-radius:3px;
+    animation:fadeInUp .7s .15s cubic-bezier(.16,1,.3,1) both;
+    clip-path:polygon(0 0,100% 0,100% 94%,96% 100%,92% 94%,88% 100%,84% 94%,80% 100%,76% 94%,72% 100%,68% 94%,64% 100%,60% 94%,56% 100%,52% 94%,48% 100%,44% 94%,40% 100%,36% 94%,32% 100%,28% 94%,24% 100%,20% 94%,16% 100%,12% 94%,8% 100%,4% 94%,0 100%);
+    filter:drop-shadow(0 22px 26px rgba(0,0,0,.32));
+  }
+  .hero-card h3{
+    font-family:'JetBrains Mono',monospace; font-size:.76rem; text-transform:uppercase; letter-spacing:.06em;
+    color:var(--ink-soft); margin-bottom:14px; padding-bottom:10px; border-bottom:1px dashed var(--border);
+  }
+  .hero-card-row{
+    display:flex; align-items:center; gap:8px; padding:9px 0; cursor:pointer;
+    font-family:'JetBrains Mono',monospace; font-size:.84rem; color:var(--ink);
+    transition:transform .18s ease, color .18s ease;
+  }
+  .hero-card-row .label{ flex:none; font-weight:600; }
+  .hero-card-row .leader{ flex:1; border-bottom:1px dotted var(--border); height:0; margin-bottom:5px; }
+  .hero-card-row .arrow{ flex:none; color:var(--ink-soft); }
+  .hero-card-row:hover{ transform:translateX(5px); color:var(--green); }
+  .hero-card-row:hover .arrow{ color:var(--green); }
+  .hero-card-row .dot{ width:7px; height:7px; border-radius:50%; flex:none; transition:transform .18s ease; }
+  .hero-card-row:hover .dot{ transform:scale(1.6); }
+
+  /* ---------------- Ad slots ---------------- */
+  .ad-slot{
+    max-width:1200px; margin:16px auto; padding:16px; display:flex; align-items:center; justify-content:center;
+    color:var(--ink-soft); font-size:.68rem; font-weight:700; letter-spacing:.06em; text-transform:uppercase;
+    font-family:'JetBrains Mono',monospace; border:1px dashed var(--border); border-radius:7px; background:var(--bg-soft); min-height:78px;
+  }
+
+  /* ---------------- All tools section ---------------- */
+  .tools-wrap{ max-width:1200px; margin:0 auto; padding:28px 24px 10px; }
+  .tools-head{ margin-bottom:20px; }
+  .tools-head h2{ font-size:1.6rem; margin-bottom:6px; }
+  .tools-head p{ color:var(--ink-soft); margin:0; font-size:.94rem; }
+
+  .filter-row{ display:flex; gap:8px; flex-wrap:wrap; margin:18px 0 26px; }
+  .chip{
+    display:flex; align-items:center; gap:7px; padding:9px 16px; border-radius:999px; border:1.5px solid var(--border);
+    background:var(--bg); font-size:.86rem; font-weight:700; color:var(--ink-soft); cursor:pointer;
+    transition:transform .12s ease, box-shadow .12s ease;
+  }
+  .chip:hover{ transform:translateY(-2px); box-shadow:0 6px 14px -8px rgba(24,26,22,.28); }
+  .chip .dot{ width:9px; height:9px; border-radius:50%; }
+  .chip.active{ color:#fff; border-color:transparent; box-shadow:0 6px 16px -6px rgba(24,26,22,.32); transform:translateY(-1px); }
+
+  .tool-grid{ display:grid; grid-template-columns:repeat(auto-fill, minmax(250px,1fr)); gap:18px; }
+  .tool-card{
+    background:var(--bg); border:1.5px solid var(--border); border-top:4px solid var(--blue); border-radius:10px;
+    padding:20px; text-align:left; cursor:pointer; box-shadow:var(--shadow);
+    transition:transform .18s ease, box-shadow .18s ease, border-color .18s ease; display:flex; flex-direction:column; gap:10px;
+    animation:fadeInUp .5s cubic-bezier(.16,1,.3,1) both;
+  }
+  .tool-card:hover{ transform:translateY(-5px) scale(1.015); box-shadow:0 14px 30px rgba(24,26,22,.14); }
+  .tool-card-top{ display:flex; align-items:flex-start; justify-content:space-between; gap:8px; }
+  .tool-code{ font-family:'JetBrains Mono',monospace; font-size:.68rem; font-weight:700; color:var(--ink-soft); letter-spacing:.04em; padding-top:3px; }
+  .tool-icon{ width:44px; height:44px; border-radius:10px; display:flex; align-items:center; justify-content:center; box-shadow:0 6px 14px -6px rgba(0,0,0,.35); transition:transform .18s ease; }
+  .tool-card:hover .tool-icon{ transform:scale(1.08) rotate(-4deg); }
+  .tool-card h3{ font-size:1.08rem; }
+  .tool-card p{ color:var(--ink-soft); font-size:.85rem; margin:0; flex:1; }
+  .tool-card .go{ font-size:.8rem; font-weight:700; display:flex; align-items:center; gap:5px; transition:gap .18s ease; padding-top:8px; border-top:1px dashed var(--border); font-family:'JetBrains Mono',monospace; }
+  .tool-card:hover .go{ gap:9px; }
+  .badge{ align-self:flex-start; font-size:.66rem; font-weight:700; padding:4px 10px; border-radius:3px; color:#fff; text-transform:uppercase; letter-spacing:.03em; }
+
+  .no-results{ display:none; text-align:center; padding:30px; color:var(--ink-soft); font-size:.92rem; }
+
+  /* ---------------- Modal ---------------- */
+  .modal-overlay{
+    position:fixed; inset:0; background:rgba(24,26,22,.6); display:none; align-items:flex-start; justify-content:center;
+    padding:6vh 16px; z-index:100; overflow-y:auto;
+  }
+  .modal-overlay.open{ display:flex; animation:overlayFade .18s ease; }
+  .modal{ background:var(--bg); width:100%; max-width:460px; border-radius:10px; box-shadow:0 24px 60px rgba(0,0,0,.35); animation:modalPop .28s cubic-bezier(.16,1,.3,1); overflow:hidden; }
+  .modal-top{ display:flex; align-items:center; gap:12px; padding:18px 22px; background:var(--ink); border-bottom:3px solid var(--green); }
+  .modal-top .tool-icon{ width:36px; height:36px; }
+  .modal-top h3{ flex:1; font-size:1.08rem; color:var(--bg); }
+  .modal-close{ background:none; border:none; font-size:1.2rem; color:#C7C1AC; cursor:pointer; padding:4px 6px; }
+  .modal-body{ padding:20px 22px 26px; }
+  .field{ margin-bottom:14px; }
+  .field label{ display:block; font-size:.82rem; font-weight:700; color:var(--ink-soft); margin-bottom:5px; }
+  .field input, .field select{
+    width:100%; padding:10px 12px; border-radius:7px; border:1.5px solid var(--border);
+    font-size:.95rem; color:var(--ink); background:var(--bg-soft); font-family:'JetBrains Mono',monospace;
+  }
+  .field select{ font-family:inherit; }
+  .field input:focus, .field select:focus{ border-color:var(--green); background:var(--bg); }
+  .field-row{ display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+  .unit-toggle{ display:flex; gap:6px; margin-bottom:14px; }
+  .unit-toggle button{
+    flex:1; padding:8px; border-radius:7px; border:1.5px solid var(--border); background:var(--bg-soft);
+    font-size:.8rem; font-weight:700; color:var(--ink-soft); cursor:pointer; transition:background .15s ease, border-color .15s ease, color .15s ease;
+  }
+  .unit-toggle button.active{ background:var(--green); border-color:var(--green); color:#fff; }
+  .result-box{ margin-top:16px; padding:16px; border-radius:9px; background:var(--green-tint); border:1px solid var(--border); border-left:4px solid var(--green); }
+  .result-box .r-label{ font-size:.7rem; font-weight:800; text-transform:uppercase; letter-spacing:.05em; color:var(--green); font-family:'JetBrains Mono',monospace; }
+  .result-box .r-value{ font-family:'JetBrains Mono',monospace; font-weight:700; font-size:1.55rem; color:var(--ink); margin:4px 0 0; letter-spacing:-.01em; }
+  .result-line{ display:flex; justify-content:space-between; font-size:.84rem; color:var(--ink-soft); margin-top:8px; }
+  .result-line b{ color:var(--ink); font-family:'JetBrains Mono',monospace; font-weight:700; }
+  .note{ font-size:.76rem; color:var(--ink-soft); margin-top:12px; }
+  .hidden{ display:none !important; }
+
+  .mini-stats{ display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-top:14px; }
+  .mini-stat{
+    background:var(--bg-soft); border:1px solid var(--border); border-radius:8px; padding:9px 6px; text-align:center;
+    animation:fadeInUp .45s cubic-bezier(.16,1,.3,1) both;
+  }
+  .mini-stat:nth-child(1){ animation-delay:.02s; }
+  .mini-stat:nth-child(2){ animation-delay:.07s; }
+  .mini-stat:nth-child(3){ animation-delay:.12s; }
+  .mini-stat:nth-child(4){ animation-delay:.17s; }
+  .mini-stat:nth-child(5){ animation-delay:.22s; }
+  .mini-stat:nth-child(6){ animation-delay:.27s; }
+  .mini-stat .k{ font-size:.65rem; font-weight:800; text-transform:uppercase; letter-spacing:.03em; color:var(--ink-soft); }
+  .mini-stat .v{ font-family:'JetBrains Mono',monospace; font-weight:700; font-size:.98rem; color:var(--ink); margin-top:3px; }
+
+  /* ---------------- Footer ---------------- */
+  .site-footer{ background:var(--ink); color:#B9B39D; padding:44px 24px 40px; margin-top:24px; }
+  .footer-inner{ max-width:1200px; margin:0 auto; }
+  .footer-inner .logo{ color:var(--bg); margin-bottom:12px; }
+  .footer-inner .logo .mark{ border-bottom-color:var(--cyan); }
+  .footer-inner p{ font-size:.86rem; max-width:65ch; color:#9C967E; }
+  .footer-links{ display:flex; gap:20px; margin-top:16px; font-size:.84rem; flex-wrap:wrap; }
+  .footer-links a{ color:#D6D0BC; text-decoration:none; }
+  .footer-links a:hover{ color:var(--bg); }
+
+  @media (max-width:860px){
+    .hero-inner{ grid-template-columns:1fr; }
+    .main-nav{ display:none; }
+  }
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="header-inner">
+    <a href="#top" class="logo"><span class="mark">F</span>Finlyzr</a>
+    <nav class="main-nav">
+      <a href="#tools" class="i18n-bn">সব ক্যালকুলেটর</a><a href="#tools" class="i18n-en">All Calculators</a>
+    </nav>
+    <div class="lang-toggle" id="langToggle">
+      <button data-lang="bn" class="active">বাংলা</button>
+      <button data-lang="en">English</button>
+    </div>
+  </div>
+</header>
+
+<section class="hero" id="top">
+  <div class="hero-inner">
+    <div>
+      <span class="hero-eyebrow">
+        <span class="i18n-bn">১০টি ফ্রি ক্যালকুলেটর · সাইন-আপ লাগবে না</span>
+        <span class="i18n-en">10 free calculators · no sign-up needed</span>
+      </span>
+      <h1>
+        <span class="i18n-bn">টাকা-পয়সার হিসাব হবে <span class="hl">সহজ ও দ্রুত।</span></span>
+        <span class="i18n-en">Everyday math, made <span class="hl">quick and easy.</span></span>
+      </h1>
+      <p>
+        <span class="i18n-bn">লোন EMI, সুদ, ট্যাক্স, বাজেট, বয়স ও BMI — প্রতিদিনের দরকারি হিসাব একজায়গায়, বিজ্ঞাপনের ঝামেলা ছাড়া।</span>
+        <span class="i18n-en">Loan EMI, interest, tax, budgeting, age and BMI — every everyday calculation in one clutter-free place.</span>
+      </p>
+      <div class="hero-search">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input type="text" id="heroSearch" placeholder="Search a tool…">
+        <button id="heroSearchBtn"><span class="i18n-bn">খুঁজুন</span><span class="i18n-en">Search</span></button>
+      </div>
+      <div class="hero-stats">
+        <div><b>10+</b><span class="i18n-bn">ক্যালকুলেটর</span><span class="i18n-en">calculators</span></div>
+        <div><b>100%</b><span class="i18n-bn">ফ্রি ব্যবহার</span><span class="i18n-en">free to use</span></div>
+        <div><b>0</b><span class="i18n-bn">সাইন-আপ প্রয়োজন</span><span class="i18n-en">sign-up required</span></div>
+      </div>
+    </div>
+    <div class="hero-card">
+      <h3><span class="i18n-bn">এই মুহূর্তে জনপ্রিয়</span><span class="i18n-en">Popular right now</span></h3>
+      <div class="hero-card-row" data-quick="emi"><span class="dot" style="background:#5B7CFF"></span><span class="label"><span class="i18n-bn">লোন EMI</span><span class="i18n-en">Loan EMI</span></span><span class="leader"></span><span class="arrow">→</span></div>
+      <div class="hero-card-row" data-quick="bmi"><span class="dot" style="background:#D96A5A"></span><span class="label"><span class="i18n-bn">BMI ক্যালকুলেটর</span><span class="i18n-en">BMI Calculator</span></span><span class="leader"></span><span class="arrow">→</span></div>
+      <div class="hero-card-row" data-quick="budget"><span class="dot" style="background:#1E9C74"></span><span class="label"><span class="i18n-bn">৫০-৩০-২০ বাজেট</span><span class="i18n-en">50-30-20 Budget</span></span><span class="leader"></span><span class="arrow">→</span></div>
+      <div class="hero-card-row" data-quick="vat"><span class="dot" style="background:#D4A017"></span><span class="label"><span class="i18n-bn">VAT / GST</span><span class="i18n-en">VAT / GST</span></span><span class="leader"></span><span class="arrow">→</span></div>
+    </div>
+  </div>
+</section>
+
+<div class="ad-slot">Ad Space — 728×90 Leaderboard</div>
+
+<section class="tools-wrap" id="tools">
+  <div class="tools-head">
+    <h2><span class="i18n-bn">সব ক্যালকুলেটর</span><span class="i18n-en">All Calculators</span></h2>
+    <p><span class="i18n-bn">প্রতিটা টুল এখানেই — ক্যাটাগরি বেছে দ্রুত ফিল্টার করুন, অথবা সার্চ করুন।</span><span class="i18n-en">Every tool lives right here — filter by category or search for what you need.</span></p>
+  </div>
+  <div class="filter-row" id="filterRow"></div>
+  <div class="tool-grid" id="toolGrid"></div>
+  <p class="no-results" id="noResults">
+    <span class="i18n-bn">এই নামে কোনো টুল পাওয়া যায়নি। অন্য কিছু লিখে দেখুন।</span>
+    <span class="i18n-en">No tool matches that. Try a different search.</span>
+  </p>
+</section>
+
+<div class="ad-slot">Ad Space — In-content 336×280</div>
+
+<footer class="site-footer">
+  <div class="footer-inner">
+    <a href="#top" class="logo"><span class="mark">F</span>Finlyzr</a>
+    <p>
+      <span class="i18n-bn">Finlyzr একটি ফ্রি ক্যালকুলেটর হাব — দৈনন্দিন আর্থিক ও ব্যবহারিক হিসাব দ্রুত করার জন্য। সব ফলাফল আনুমানিক ধারণার জন্য; বড় আর্থিক সিদ্ধান্তের আগে একজন বিশেষজ্ঞের পরামর্শ নিন।</span>
+      <span class="i18n-en">Finlyzr is a free calculator hub for everyday financial and practical math. Results are estimates only — consult a professional before major financial decisions.</span>
+    </p>
+    <div class="footer-links">
+      <a href="#top" class="i18n-bn">হোম</a><a href="#top" class="i18n-en">Home</a>
+      <a href="#" onclick="return false;"><span class="i18n-bn">প্রাইভেসি পলিসি</span><span class="i18n-en">Privacy Policy</span></a>
+      <a href="#" onclick="return false;"><span class="i18n-bn">যোগাযোগ</span><span class="i18n-en">Contact</span></a>
+    </div>
+    <div class="ad-slot" style="margin-left:0;">Ad Space — Footer 728×90</div>
+  </div>
+</footer>
+
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal">
+    <div class="modal-top">
+      <span class="tool-icon" id="modalIcon"></span>
+      <h3 id="modalTitle">Tool</h3>
+      <button class="modal-close" id="modalClose" aria-label="Close">✕</button>
+    </div>
+    <div class="modal-body" id="modalBody"></div>
+  </div>
+</div>
+
+<script>
+/* ---------- Language state ---------- */
+let currentLang = 'bn';
+const T = (en, bn) => currentLang === 'bn' ? bn : en;
+
+/* ---------- Icons ---------- */
+const ICONS = {
+  home: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-7 9 7"/><path d="M5 10v9h14v-9"/><path d="M9 19v-5h6v5"/></svg>`,
+  coins: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="9" cy="7" rx="6" ry="3"/><path d="M3 7v5c0 1.66 2.69 3 6 3s6-1.34 6-3V7"/><path d="M9 12v5c0 1.66 2.69 3 6 3s6-1.34 6-3v-5"/><ellipse cx="15" cy="12" rx="6" ry="3"/></svg>`,
+  trending: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 17 9 11 13 15 21 6"/><polyline points="15 6 21 6 21 12"/></svg>`,
+  percent: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="5" x2="5" y2="19"/><circle cx="6.5" cy="6.5" r="2.5"/><circle cx="17.5" cy="17.5" r="2.5"/></svg>`,
+  tag: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41L11 3.83A2 2 0 009.59 3.24L3 3v6.59a2 2 0 00.59 1.41l9.58 9.58a2 2 0 002.83 0l4.59-4.59a2 2 0 000-2.83z"/><circle cx="7.5" cy="7.5" r="1.5"/></svg>`,
+  receipt: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2z"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="9" y1="12" x2="15" y2="12"/></svg>`,
+  pie: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21.21 15.89A10 10 0 118 2.83"/><path d="M22 12A10 10 0 0012 2v10z"/></svg>`,
+  target: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1"/></svg>`,
+  calendar: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>`,
+  pulse: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9-6-18-3 9H2"/></svg>`,
+};
+
+const CATEGORIES = [
+  {id:"loans",   color:"var(--blue)",  tint:"var(--blue-tint)",  en:"Loans & Interest",   bn:"ঋণ ও সুদ"},
+  {id:"shopping",color:"var(--amber)", tint:"var(--amber-tint)", en:"Shopping & Tax",     bn:"কেনাকাটা ও ট্যাক্স"},
+  {id:"budget",  color:"var(--green)", tint:"var(--green-tint)", en:"Budget & Savings",   bn:"বাজেট ও সঞ্চয়"},
+  {id:"life",    color:"var(--pink)",  tint:"var(--pink-tint)",  en:"Health & Life",      bn:"স্বাস্থ্য ও জীবন"},
+];
+const catById = id => CATEGORIES.find(c=>c.id===id);
+
+const fmt = n => isFinite(n) ? n.toLocaleString('en-IN', {maximumFractionDigits:2}) : "—";
+const cur = () => T('$', '৳ ');
+const countUp = (el, target, duration=650) => {
+  const start = performance.now();
+  const from = 0;
+  function step(now){
+    const p = Math.min((now-start)/duration, 1);
+    const eased = 1-Math.pow(1-p, 3);
+    el.textContent = Math.round(from + (target-from)*eased).toLocaleString('en-IN');
+    if(p<1) requestAnimationFrame(step);
+  }
+  requestAnimationFrame(step);
+};
+
+const TOOLS = [
+  { id:"emi", code:"EMI-01", cat:"loans", icon:"home", en:{name:"Loan EMI Calculator", desc:"Find your monthly payment, total interest and total payback."}, bn:{name:"লোন EMI ক্যালকুলেটর", desc:"মাসিক কিস্তি, মোট সুদ ও মোট পরিশোধ বের করুন।"},
+    render(body){
+      body.innerHTML = `
+        <div class="field"><label>${T('Loan amount','লোনের পরিমাণ')} (${cur().trim()})</label><input type="number" id="p1" value="500000"></div>
+        <div class="field-row">
+          <div class="field"><label>${T('Annual interest rate (%)','বার্ষিক সুদের হার (%)')}</label><input type="number" id="r1" value="10" step="0.1"></div>
+          <div class="field"><label>${T('Tenure (years)','মেয়াদ (বছর)')}</label><input type="number" id="t1" value="5"></div>
+        </div>
+        <div class="result-box"><p class="r-label">${T('Monthly EMI','মাসিক কিস্তি (EMI)')}</p><p class="r-value" id="out1">—</p>
+          <div class="result-line"><span>${T('Total interest','মোট সুদ')}</span><b id="out1b">—</b></div>
+          <div class="result-line"><span>${T('Total payback','মোট পরিশোধ')}</span><b id="out1c">—</b></div></div>`;
+      const calc=()=>{
+        const P=+body.querySelector('#p1').value, annR=+body.querySelector('#r1').value, yrs=+body.querySelector('#t1').value;
+        const r=annR/12/100, n=yrs*12;
+        const emi = r===0 ? P/n : P*r*Math.pow(1+r,n)/(Math.pow(1+r,n)-1);
+        const total = emi*n;
+        body.querySelector('#out1').textContent=cur()+fmt(emi);
+        body.querySelector('#out1b').textContent=cur()+fmt(total-P);
+        body.querySelector('#out1c').textContent=cur()+fmt(total);
+      };
+      body.querySelectorAll('input').forEach(i=>i.addEventListener('input',calc));
+      calc();
+    }},
+  { id:"simple-interest", code:"INT-02", cat:"loans", icon:"coins", en:{name:"Simple Interest", desc:"Quick interest using the P × R × T formula."}, bn:{name:"সাধারণ সুদ (Simple Interest)", desc:"P × R × T সূত্রে দ্রুত সুদ হিসাব করুন।"},
+    render(body){
+      body.innerHTML = `
+        <div class="field"><label>${T('Principal','মূলধন')} (${cur().trim()})</label><input type="number" id="p2" value="100000"></div>
+        <div class="field-row">
+          <div class="field"><label>${T('Annual rate (%)','বার্ষিক সুদহার (%)')}</label><input type="number" id="r2" value="8" step="0.1"></div>
+          <div class="field"><label>${T('Time (years)','সময় (বছর)')}</label><input type="number" id="t2" value="3" step="0.1"></div>
+        </div>
+        <div class="result-box"><p class="r-label">${T('Interest','সুদ')}</p><p class="r-value" id="out2">—</p>
+          <div class="result-line"><span>${T('Total payable','মোট পাওনা')}</span><b id="out2b">—</b></div></div>`;
+      const calc=()=>{
+        const P=+body.querySelector('#p2').value, R=+body.querySelector('#r2').value, TT=+body.querySelector('#t2').value;
+        const si=P*R*TT/100;
+        body.querySelector('#out2').textContent=cur()+fmt(si);
+        body.querySelector('#out2b').textContent=cur()+fmt(P+si);
+      };
+      body.querySelectorAll('input').forEach(i=>i.addEventListener('input',calc));
+      calc();
+    }},
+  { id:"compound-interest", code:"INT-03", cat:"loans", icon:"trending", en:{name:"Compound Interest", desc:"See growth across different compounding frequencies."}, bn:{name:"চক্রবৃদ্ধি সুদ (Compound Interest)", desc:"বিভিন্ন compounding frequency-তে বৃদ্ধি দেখুন।"},
+    render(body){
+      body.innerHTML = `
+        <div class="field"><label>${T('Principal','মূলধন')} (${cur().trim()})</label><input type="number" id="p3" value="100000"></div>
+        <div class="field-row">
+          <div class="field"><label>${T('Annual rate (%)','বার্ষিক সুদহার (%)')}</label><input type="number" id="r3" value="9" step="0.1"></div>
+          <div class="field"><label>${T('Time (years)','সময় (বছর)')}</label><input type="number" id="t3" value="5"></div>
+        </div>
+        <div class="field"><label>${T('Compounding','Compounding')}</label>
+          <select id="n3">
+            <option value="1">${T('Yearly','বার্ষিক')}</option>
+            <option value="2">${T('Half-yearly','ষাণ্মাসিক')}</option>
+            <option value="4" selected>${T('Quarterly','ত্রৈমাসিক')}</option>
+            <option value="12">${T('Monthly','মাসিক')}</option>
+          </select></div>
+        <div class="result-box"><p class="r-label">${T('Total at maturity','মেয়াদ শেষে মোট টাকা')}</p><p class="r-value" id="out3">—</p>
+          <div class="result-line"><span>${T('Interest earned','মোট অর্জিত সুদ')}</span><b id="out3b">—</b></div></div>`;
+      const calc=()=>{
+        const P=+body.querySelector('#p3').value, R=+body.querySelector('#r3').value, TT=+body.querySelector('#t3').value, n=+body.querySelector('#n3').value;
+        const A=P*Math.pow(1+(R/100)/n, n*TT);
+        body.querySelector('#out3').textContent=cur()+fmt(A);
+        body.querySelector('#out3b').textContent=cur()+fmt(A-P);
+      };
+      body.querySelectorAll('input,select').forEach(i=>i.addEventListener('input',calc));
+      calc();
+    }},
+  { id:"percentage", code:"PCT-04", cat:"shopping", icon:"percent", en:{name:"Percentage Calculator", desc:"Find X% of Y, or what % X is of Y."}, bn:{name:"পার্সেন্টেজ ক্যালকুলেটর", desc:"X-এর কত % Y, বা Y-এর X% কত — দুটোই বের করুন।"},
+    render(body){
+      body.innerHTML = `
+        <div class="unit-toggle">
+          <button class="active" data-mode="of">${T('X% of Y','X% of Y')}</button>
+          <button data-mode="what">${T('X is what % of Y','X, Y-এর কত %')}</button>
+        </div>
+        <div class="field-row">
+          <div class="field"><label id="lbl4a">${T('Percentage (%)','শতকরা হার (%)')}</label><input type="number" id="a4" value="15"></div>
+          <div class="field"><label id="lbl4b">${T('Number (Y)','সংখ্যা (Y)')}</label><input type="number" id="b4" value="2400"></div>
+        </div>
+        <div class="result-box"><p class="r-label" id="rlabel4">${T('Result','ফলাফল')}</p><p class="r-value" id="out4">—</p></div>`;
+      let mode='of';
+      const calc=()=>{
+        const a=+body.querySelector('#a4').value, b=+body.querySelector('#b4').value;
+        if(mode==='of'){
+          body.querySelector('#rlabel4').textContent = T(a+'% of '+fmt(b)+' is', a+"% of "+fmt(b)+" হলো");
+          body.querySelector('#out4').textContent = fmt(a*b/100);
+        } else {
+          body.querySelector('#rlabel4').textContent = T(fmt(a)+' is this % of '+fmt(b), fmt(a)+" হলো "+fmt(b)+"-এর");
+          body.querySelector('#out4').textContent = fmt(a/b*100)+" %";
+        }
+      };
+      body.querySelectorAll('.unit-toggle button').forEach(btn=>{
+        btn.addEventListener('click',()=>{
+          body.querySelectorAll('.unit-toggle button').forEach(b=>b.classList.remove('active'));
+          btn.classList.add('active'); mode=btn.dataset.mode;
+          body.querySelector('#lbl4a').textContent = mode==='of' ? T('Percentage (%)','শতকরা হার (%)') : T('Number (X)','সংখ্যা (X)');
+          body.querySelector('#lbl4b').textContent = mode==='of' ? T('Number (Y)','সংখ্যা (Y)') : T('Total (Y)','মোট (Y)');
+          calc();
+        });
+      });
+      body.querySelectorAll('input').forEach(i=>i.addEventListener('input',calc));
+      calc();
+    }},
+  { id:"discount", code:"TAG-05", cat:"shopping", icon:"tag", en:{name:"Discount Calculator", desc:"See the sale price and how much you save."}, bn:{name:"ডিসকাউন্ট ক্যালকুলেটর", desc:"ছাড়ের পর দাম ও কত টাকা বাঁচলো, তা দেখুন।"},
+    render(body){
+      body.innerHTML = `
+        <div class="field"><label>${T('Original price','আসল দাম')} (${cur().trim()})</label><input type="number" id="p5" value="1500"></div>
+        <div class="field"><label>${T('Discount (%)','ছাড় (%)')}</label><input type="number" id="d5" value="25"></div>
+        <div class="result-box"><p class="r-label">${T('New price','নতুন দাম')}</p><p class="r-value" id="out5">—</p>
+          <div class="result-line"><span>${T('You save','বাঁচলো')}</span><b id="out5b">—</b></div></div>`;
+      const calc=()=>{
+        const P=+body.querySelector('#p5').value, D=+body.querySelector('#d5').value;
+        const saved=P*D/100;
+        body.querySelector('#out5').textContent=cur()+fmt(P-saved);
+        body.querySelector('#out5b').textContent=cur()+fmt(saved);
+      };
+      body.querySelectorAll('input').forEach(i=>i.addEventListener('input',calc));
+      calc();
+    }},
+  { id:"vat", code:"TAX-06", cat:"shopping", icon:"receipt", en:{name:"VAT / GST Calculator", desc:"Add tax to a price, or remove tax from a total."}, bn:{name:"VAT / GST ক্যালকুলেটর", desc:"দামে ট্যাক্স যোগ করুন বা দাম থেকে ট্যাক্স আলাদা করুন।"},
+    render(body){
+      body.innerHTML = `
+        <div class="unit-toggle">
+          <button class="active" data-mode="add">${T('Add tax','ট্যাক্স যোগ করুন')}</button>
+          <button data-mode="remove">${T('Remove tax','ট্যাক্স বাদ দিন')}</button>
+        </div>
+        <div class="field-row">
+          <div class="field"><label id="lbl6">${T('Price (excl. tax)','দাম (ট্যাক্স ছাড়া)')}</label><input type="number" id="a6" value="1000"></div>
+          <div class="field"><label>${T('Tax rate (%)','ট্যাক্স হার (%)')}</label><input type="number" id="b6" value="15"></div>
+        </div>
+        <div class="result-box"><p class="r-label" id="rlabel6">${T('Total (incl. tax)','মোট দাম (ট্যাক্সসহ)')}</p><p class="r-value" id="out6">—</p>
+          <div class="result-line"><span>${T('Tax amount','ট্যাক্সের পরিমাণ')}</span><b id="out6b">—</b></div></div>`;
+      let mode='add';
+      const calc=()=>{
+        const a=+body.querySelector('#a6').value, rate=+body.querySelector('#b6').value;
+        if(mode==='add'){
+          const tax=a*rate/100;
+          body.querySelector('#rlabel6').textContent=T('Total (incl. tax)','মোট দাম (ট্যাক্সসহ)');
+          body.querySelector('#out6').textContent=cur()+fmt(a+tax);
+          body.querySelector('#out6b').textContent=cur()+fmt(tax);
+        } else {
+          const base=a/(1+rate/100);
+          body.querySelector('#rlabel6').textContent=T('Price (excl. tax)','দাম (ট্যাক্স ছাড়া)');
+          body.querySelector('#out6').textContent=cur()+fmt(base);
+          body.querySelector('#out6b').textContent=cur()+fmt(a-base);
+        }
+      };
+      body.querySelectorAll('.unit-toggle button').forEach(btn=>{
+        btn.addEventListener('click',()=>{
+          body.querySelectorAll('.unit-toggle button').forEach(b=>b.classList.remove('active'));
+          btn.classList.add('active'); mode=btn.dataset.mode;
+          body.querySelector('#lbl6').textContent = mode==='add' ? T('Price (excl. tax)','দাম (ট্যাক্স ছাড়া)') : T('Price (incl. tax)','দাম (ট্যাক্সসহ)');
+          calc();
+        });
+      });
+      body.querySelectorAll('input').forEach(i=>i.addEventListener('input',calc));
+      calc();
+    }},
+  { id:"budget", code:"BUD-07", cat:"budget", icon:"pie", en:{name:"50-30-20 Budget Planner", desc:"Split your income into needs, wants and savings."}, bn:{name:"৫০-৩০-২০ বাজেট প্ল্যানার", desc:"আয়কে প্রয়োজন, শখ ও সঞ্চয়ে ভাগ করুন।"},
+    render(body){
+      body.innerHTML = `
+        <div class="field"><label>${T('Monthly income','মাসিক আয়')} (${cur().trim()})</label><input type="number" id="i7" value="40000"></div>
+        <div class="result-box"><p class="r-label">${T('Needs (50%)','প্রয়োজন (৫০%)')}</p><p class="r-value" id="out7a">—</p>
+          <div class="result-line"><span>${T('Wants (30%)','শখ / চাওয়া (৩০%)')}</span><b id="out7b">—</b></div>
+          <div class="result-line"><span>${T('Savings (20%)','সঞ্চয় (২০%)')}</span><b id="out7c">—</b></div></div>`;
+      const calc=()=>{
+        const i=+body.querySelector('#i7').value;
+        body.querySelector('#out7a').textContent=cur()+fmt(i*0.5);
+        body.querySelector('#out7b').textContent=cur()+fmt(i*0.3);
+        body.querySelector('#out7c').textContent=cur()+fmt(i*0.2);
+      };
+      body.querySelectorAll('input').forEach(i=>i.addEventListener('input',calc));
+      calc();
+    }},
+  { id:"savings-goal", code:"SAV-08", cat:"budget", icon:"target", en:{name:"Savings Goal Calculator", desc:"Find out how many months to reach your goal."}, bn:{name:"সঞ্চয় লক্ষ্য ক্যালকুলেটর", desc:"লক্ষ্যে পৌঁছাতে কত মাস লাগবে দেখুন।"},
+    render(body){
+      body.innerHTML = `
+        <div class="field"><label>${T('Goal amount','লক্ষ্য পরিমাণ')} (${cur().trim()})</label><input type="number" id="g8" value="300000"></div>
+        <div class="field-row">
+          <div class="field"><label>${T('Current savings','বর্তমান সঞ্চয়')} (${cur().trim()})</label><input type="number" id="c8" value="20000"></div>
+          <div class="field"><label>${T('Monthly deposit','মাসিক জমা')} (${cur().trim()})</label><input type="number" id="m8" value="5000"></div>
+        </div>
+        <div class="field"><label>${T('Annual return (%, optional)','বার্ষিক রিটার্ন (%, ঐচ্ছিক)')}</label><input type="number" id="rr8" value="0" step="0.1"></div>
+        <div class="result-box"><p class="r-label">${T('Time to reach goal','লক্ষ্যে পৌঁছাতে সময়')}</p><p class="r-value" id="out8">—</p></div>
+        <p class="note">${T('If you add a return %, monthly compounding is assumed.','রিটার্ন % দিলে আনুমানিক মাসিক compounding ধরা হয়।')}</p>`;
+      const calc=()=>{
+        const goal=+body.querySelector('#g8').value, cur0=+body.querySelector('#c8').value, mo=+body.querySelector('#m8').value, annR=+body.querySelector('#rr8').value;
+        const i=annR/12/100; let bal=cur0, months=0;
+        if(mo<=0){ body.querySelector('#out8').textContent=T('Monthly deposit needed','মাসিক জমা প্রয়োজন'); return; }
+        if(bal>=goal){ body.querySelector('#out8').textContent=T('Goal already reached ✓','লক্ষ্য ইতিমধ্যে পূর্ণ ✓'); return; }
+        while(bal<goal && months<1200){ bal=bal*(1+i)+mo; months++; }
+        if(months>=1200){ body.querySelector('#out8').textContent=T('Not reachable in 100 years','১০০ বছরেও সম্ভব নয়'); }
+        else{ const y=Math.floor(months/12), m=months%12; body.querySelector('#out8').textContent=(y>0?y+T(' yr ',' বছর '):"")+m+T(' mo','  মাস'); }
+      };
+      body.querySelectorAll('input').forEach(i=>i.addEventListener('input',calc));
+      calc();
+    }},
+  { id:"age", code:"AGE-09", cat:"life", icon:"calendar", en:{name:"Age Calculator", desc:"Get the exact years, months and days from a birth date."}, bn:{name:"বয়স ক্যালকুলেটর", desc:"জন্মতারিখ থেকে সঠিক বছর, মাস, দিন বের করুন।"},
+    render(body){
+      const today=new Date().toISOString().split('T')[0];
+      body.innerHTML = `
+        <div class="field"><label>${T('Date of birth','জন্মতারিখ')}</label><input type="date" id="b9" value="2000-01-01"></div>
+        <div class="field"><label>${T('As of date','হিসাবের তারিখ')}</label><input type="date" id="d9" value="${today}"></div>
+        <div class="result-box"><p class="r-label">${T('Age','বয়স')}</p><p class="r-value" id="out9">—</p></div>
+        <div class="mini-stats" id="miniStats9"></div>`;
+      const miniWrap = body.querySelector('#miniStats9');
+      const calc=()=>{
+        const b=new Date(body.querySelector('#b9').value), d=new Date(body.querySelector('#d9').value);
+        if(isNaN(b)||isNaN(d)||b>d){
+          body.querySelector('#out9').textContent=T('Check the dates','তারিখ যাচাই করুন');
+          miniWrap.innerHTML='';
+          return;
+        }
+        let years=d.getFullYear()-b.getFullYear(), months=d.getMonth()-b.getMonth(), days=d.getDate()-b.getDate();
+        if(days<0){ months--; days+=new Date(d.getFullYear(), d.getMonth(), 0).getDate(); }
+        if(months<0){ years--; months+=12; }
+        body.querySelector('#out9').textContent = T(`${years}y ${months}m ${days}d`, `${years} বছর ${months} মাস ${days} দিন`);
+
+        const totalMonths = years*12+months;
+        const totalDays = Math.floor((d-b)/86400000);
+        const totalWeeks = Math.floor(totalDays/7);
+        const totalHours = totalDays*24;
+        const totalMinutes = totalHours*60;
+        const totalSeconds = totalMinutes*60;
+
+        miniWrap.innerHTML = `
+          <div class="mini-stat"><div class="k">${T('Months','মাস')}</div><div class="v" data-t="${totalMonths}">0</div></div>
+          <div class="mini-stat"><div class="k">${T('Weeks','সপ্তাহ')}</div><div class="v" data-t="${totalWeeks}">0</div></div>
+          <div class="mini-stat"><div class="k">${T('Days','দিন')}</div><div class="v" data-t="${totalDays}">0</div></div>
+          <div class="mini-stat"><div class="k">${T('Hours','ঘন্টা')}</div><div class="v" data-t="${totalHours}">0</div></div>
+          <div class="mini-stat"><div class="k">${T('Minutes','মিনিট')}</div><div class="v" data-t="${totalMinutes}">0</div></div>
+          <div class="mini-stat"><div class="k">${T('Seconds','সেকেন্ড')}</div><div class="v" data-t="${totalSeconds}">0</div></div>`;
+        miniWrap.querySelectorAll('.v').forEach(el => countUp(el, +el.dataset.t));
+      };
+      body.querySelectorAll('input').forEach(i=>i.addEventListener('input',calc));
+      calc();
+    }},
+  { id:"bmi", code:"BMI-10", cat:"life", icon:"pulse", en:{name:"BMI Calculator", desc:"Use cm or ft/in, kg or lb — whichever you prefer."}, bn:{name:"BMI ক্যালকুলেটর", desc:"সেমি বা ফুট-ইঞ্চি, কেজি বা পাউন্ড — যেভাবে সুবিধা সেভাবেই হিসাব করুন।"},
+    render(body){
+      body.innerHTML = `
+        <div class="unit-toggle">
+          <button class="active" data-h="cm">${T('Height: cm','উচ্চতা: সেমি')}</button>
+          <button data-h="ftin">${T('Height: ft/in','উচ্চতা: ফুট-ইঞ্চি')}</button>
+        </div>
+        <div class="field" id="hCmField"><label>${T('Height (cm)','উচ্চতা (সেমি)')}</label><input type="number" id="hCm" value="170"></div>
+        <div class="field-row hidden" id="hFtField">
+          <div class="field"><label>${T('Height (ft)','উচ্চতা (ফুট)')}</label><input type="number" id="hFt" value="5"></div>
+          <div class="field"><label>${T('Height (in)','উচ্চতা (ইঞ্চি)')}</label><input type="number" id="hIn" value="7"></div>
+        </div>
+        <div class="unit-toggle">
+          <button class="active" data-w="kg">${T('Weight: kg','ওজন: কেজি')}</button>
+          <button data-w="lb">${T('Weight: lb','ওজন: পাউন্ড')}</button>
+        </div>
+        <div class="field"><label id="wLabel">${T('Weight (kg)','ওজন (কেজি)')}</label><input type="number" id="wVal" value="65"></div>
+        <div class="result-box"><p class="r-label">BMI</p><p class="r-value" id="out10">—</p>
+          <div class="result-line"><span>${T('Category','ক্যাটাগরি')}</span><b id="out10b">—</b></div></div>`;
+      let hUnit='cm', wUnit='kg';
+      const hCmField=body.querySelector('#hCmField'), hFtField=body.querySelector('#hFtField');
+      const calc=()=>{
+        let heightM;
+        if(hUnit==='cm'){ heightM = (+body.querySelector('#hCm').value)/100; }
+        else{ const ft=+body.querySelector('#hFt').value, inch=+body.querySelector('#hIn').value; heightM = ((ft*12)+inch)*0.0254; }
+        let wKg = +body.querySelector('#wVal').value;
+        if(wUnit==='lb') wKg = wKg*0.453592;
+        const bmi = wKg/(heightM*heightM);
+        let cat=T('Normal','স্বাভাবিক');
+        if(bmi<18.5) cat=T('Underweight','কম ওজন');
+        else if(bmi>=25 && bmi<30) cat=T('Overweight','অতিরিক্ত ওজন');
+        else if(bmi>=30) cat=T('Obese','স্থূল (Obese)');
+        body.querySelector('#out10').textContent = fmt(bmi);
+        body.querySelector('#out10b').textContent = cat;
+      };
+      body.querySelectorAll('.unit-toggle')[0].querySelectorAll('button').forEach(btn=>{
+        btn.addEventListener('click',()=>{
+          body.querySelectorAll('.unit-toggle')[0].querySelectorAll('button').forEach(b=>b.classList.remove('active'));
+          btn.classList.add('active'); hUnit=btn.dataset.h;
+          hCmField.classList.toggle('hidden', hUnit!=='cm');
+          hFtField.classList.toggle('hidden', hUnit!=='ftin');
+          calc();
+        });
+      });
+      body.querySelectorAll('.unit-toggle')[1].querySelectorAll('button').forEach(btn=>{
+        btn.addEventListener('click',()=>{
+          body.querySelectorAll('.unit-toggle')[1].querySelectorAll('button').forEach(b=>b.classList.remove('active'));
+          btn.classList.add('active'); wUnit=btn.dataset.w;
+          body.querySelector('#wLabel').textContent = wUnit==='kg' ? T('Weight (kg)','ওজন (কেজি)') : T('Weight (lb)','ওজন (পাউন্ড)');
+          calc();
+        });
+      });
+      body.querySelectorAll('input').forEach(i=>i.addEventListener('input',calc));
+      calc();
+    }},
+];
+
+/* ---------- Filter chips ---------- */
+let activeFilter = 'all';
+const filterRow = document.getElementById('filterRow');
+function renderFilterRow(){
+  filterRow.innerHTML = '';
+  const allChip = document.createElement('button');
+  allChip.className = 'chip' + (activeFilter==='all' ? ' active' : '');
+  if(activeFilter==='all') allChip.style.background = 'var(--ink)';
+  allChip.innerHTML = `<span class="dot" style="background:var(--green)"></span>${T('All','সব')}`;
+  allChip.addEventListener('click', ()=>{ activeFilter='all'; renderFilterRow(); renderGrid(); });
+  filterRow.appendChild(allChip);
+  CATEGORIES.forEach(cat=>{
+    const chip = document.createElement('button');
+    chip.className = 'chip' + (activeFilter===cat.id ? ' active' : '');
+    if(activeFilter===cat.id) chip.style.background = cat.color;
+    chip.innerHTML = `<span class="dot" style="background:${cat.color}"></span>${T(cat.en, cat.bn)}`;
+    chip.addEventListener('click', ()=>{ activeFilter=cat.id; renderFilterRow(); renderGrid(); });
+    filterRow.appendChild(chip);
+  });
+}
+
+/* ---------- Tool grid ---------- */
+const toolGrid = document.getElementById('toolGrid');
+function renderGrid(query){
+  query = (query||'').trim().toLowerCase();
+  toolGrid.innerHTML = '';
+  let items = TOOLS.filter(t => activeFilter==='all' || t.cat===activeFilter);
+  if(query){
+    items = items.filter(t =>
+      t.en.name.toLowerCase().includes(query) || t.en.desc.toLowerCase().includes(query) ||
+      t.bn.name.toLowerCase().includes(query) || t.bn.desc.toLowerCase().includes(query));
+  }
+  items.forEach((t,idx)=>{
+    const cat = catById(t.cat);
+    const card = document.createElement('button');
+    card.className = 'tool-card';
+    card.style.borderTopColor = cat.color;
+    card.style.animationDelay = (idx*45)+'ms';
+    card.dataset.id = t.id;
+    card.innerHTML = `
+      <div class="tool-card-top">
+        <span class="badge" style="background:${cat.color};">${T(cat.en, cat.bn)}</span>
+        <span class="tool-code">${t.code || ''}</span>
+      </div>
+      <span class="tool-icon" style="background:${cat.color}; color:#fff;">${ICONS[t.icon]}</span>
+      <h3>${T(t.en.name, t.bn.name)}</h3>
+      <p>${T(t.en.desc, t.bn.desc)}</p>
+      <span class="go" style="color:${cat.color};">${T('Open','খুলুন')} →</span>`;
+    card.addEventListener('click', ()=> openModal(t));
+    toolGrid.appendChild(card);
+  });
+  document.getElementById('noResults').style.display = items.length===0 ? 'block' : 'none';
+}
+
+/* ---------- Modal ---------- */
+const overlay=document.getElementById('modalOverlay');
+const modalTitle=document.getElementById('modalTitle');
+const modalIcon=document.getElementById('modalIcon');
+const modalBody=document.getElementById('modalBody');
+function openModal(tool){
+  const cat = catById(tool.cat);
+  modalTitle.textContent = T(tool.en.name, tool.bn.name);
+  modalIcon.innerHTML = ICONS[tool.icon];
+  modalIcon.style.background = cat.color; modalIcon.style.color = '#fff';
+  modalIcon.style.animation = 'none'; void modalIcon.offsetWidth;
+  modalIcon.style.animation = 'popIn .4s cubic-bezier(.34,1.56,.64,1) both';
+  modalBody.innerHTML='';
+  tool.render(modalBody);
+  overlay.classList.add('open');
+}
+document.getElementById('modalClose').addEventListener('click', ()=>overlay.classList.remove('open'));
+overlay.addEventListener('click', e=>{ if(e.target===overlay) overlay.classList.remove('open'); });
+document.addEventListener('keydown', e=>{ if(e.key==='Escape') overlay.classList.remove('open'); });
+
+/* ---------- Search ---------- */
+document.getElementById('heroSearch').addEventListener('input', e=> renderGrid(e.target.value));
+document.getElementById('heroSearchBtn').addEventListener('click', ()=>{
+  document.getElementById('tools').scrollIntoView({behavior:'smooth'});
+});
+
+/* ---------- Hero quick links ---------- */
+document.querySelectorAll('.hero-card-row').forEach(row=>{
+  row.addEventListener('click', ()=> openModal(TOOLS.find(t=>t.id===row.dataset.quick)));
+});
+
+/* ---------- Language switching ---------- */
+function setLang(lang){
+  currentLang = lang;
+  document.documentElement.setAttribute('data-lang', lang);
+  document.querySelectorAll('#langToggle button').forEach(b=> b.classList.toggle('active', b.dataset.lang===lang));
+  overlay.classList.remove('open');
+  renderFilterRow();
+  renderGrid(document.getElementById('heroSearch').value);
+}
+document.getElementById('langToggle').addEventListener('click', e=>{
+  const btn = e.target.closest('button');
+  if(btn) setLang(btn.dataset.lang);
+});
+
+/* ---------- Initial render + location-based language detection ---------- */
+renderFilterRow();
+renderGrid();
+
+(function detectLanguage(){
+  // quick guess from browser locale first
+  const browserGuess = navigator.language && navigator.language.toLowerCase().startsWith('bn') ? 'bn' : 'en';
+  setLang(browserGuess);
+  // then refine using IP-based country lookup (Bangladesh -> Bangla, else English)
+  fetch('https://ipapi.co/json/').then(r=>r.json()).then(data=>{
+    if(data && data.country_code === 'BD'){ setLang('bn'); }
+    else if(data && data.country_code){ setLang('en'); }
+  }).catch(()=>{ /* keep browser-language guess if lookup fails */ });
+})();
+</script>
+</body>
+</html>
